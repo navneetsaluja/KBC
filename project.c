@@ -14,8 +14,9 @@ struct question
 
 void shuffle(int *array, int n);
 void printQuestion(FILE *infile, int *array, int i);
-void checkAnswer();
-void fiftyfifty();
+void checkAnswer(struct question ques);
+void fiftyfifty(struct question ques);
+void flipQuestion();
 
 int main()
 
@@ -90,17 +91,17 @@ void printQuestion(FILE *infile, int *array, int i)
     fseek(infile, rand * sizeof(struct question), SEEK_SET);
     fread(&q, sizeof(struct question), 1, infile);
 
-/* DISPLAYING A QUESTION */
+    /* DISPLAYING A QUESTION */
 display:
     printf("Question Number %d\n", i + 1);
     printf("%s\n", q.question);
     printf("A. %s \t\t B. %s\n", q.options[0], q.options[1]);
     printf("C. %s \t\t D. %s\n\n", q.options[2], q.options[3]);
 
-    checkAnswer();
+    checkAnswer(q);
 }
 
-void checkAnswer()
+void checkAnswer(struct question ques)
 {
     char opt;
     int j;
@@ -124,53 +125,62 @@ void checkAnswer()
         break;
     case 'f':
         /* FIFTY FIFTY LIFELINE */
-        fiftyfifty(); goto skip;
-    case 'l': break;
+        fiftyfifty(ques);
+        goto skip;
+    case 'l':
+        flipQuestion();
+        goto skip;
 
     default:
     {
         printf("WRONG OPTION ENTERED. RE ENTER.\n");
-        checkAnswer();
+        checkAnswer(ques);
     };
     }
 
-    if (strcmp(q.correctAnswer, q.options[j]) == 0)
+    if (strcmp(ques.correctAnswer, ques.options[j]) == 0)
         printf("CORRECT ANSWER\n\n");
     else
         printf("WRONG\n\n");
 
-    skip: ;
+skip:;
 }
 
-void fiftyfifty()
+void fiftyfifty(struct question ques)
 {
     char tempstr[4][40];
     int temparr[4], count = 0;
 
-
     for (int k = 0; k < 4; ++k)
     {
-        strcpy(tempstr[k], q.options[k]);
+        strcpy(tempstr[k], ques.options[k]);
         temparr[k] = k;
     }
     shuffle(temparr, 4);
 
     for (int k = 0; k < 4; k++)
+    {
+        if (count == 2)
+            break;
+
+        if (strcmp(ques.correctAnswer, tempstr[temparr[k]]) == 0)
+            ;
+        else
         {
-            if (count == 2)
-                break;
-
-            if (strcmp(q.correctAnswer, tempstr[temparr[k]]) == 0)
-                ;
-            else
-            {
-                count++;
-                memset(tempstr[temparr[k]], '\0', 40);
-            }
+            count++;
+            memset(tempstr[temparr[k]], '\0', 40);
         }
-        printf("%s\n", q.question);
-        printf("A. %s \t\t B. %s\n", tempstr[0], tempstr[1]);
-        printf("C. %s \t\t D. %s\n\n", tempstr[2], tempstr[3]);
+    }
+    printf("%s\n", ques.question);
+    printf("A. %s \t\t B. %s\n", tempstr[0], tempstr[1]);
+    printf("C. %s \t\t D. %s\n\n", tempstr[2], tempstr[3]);
+    checkAnswer(ques);
+}
 
-        checkAnswer();
+void flipQuestion()
+{
+    printf("%s\n", flip.question);
+    printf("A. %s \t\t B. %s\n", flip.options[0], flip.options[1]);
+    printf("C. %s \t\t D. %s\n\n", flip.options[2], flip.options[3]);
+    checkAnswer(flip);
 }
