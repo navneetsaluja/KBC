@@ -1,31 +1,33 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include<time.h>
-#include<ctype.h>
-#include<string.h>
+#include <time.h>
+#include <ctype.h>
+#include <string.h>
 
-struct question 
-{   
+struct question
+{
     int questionNo;
     char question[500];
     char options[4][40];
     char correctAnswer[40];
-} q;
+} q, flip;
 
 void shuffle(int *array, int n);
 void printQuestion(FILE *infile, int *array, int i);
+void checkAnswer();
+void fiftyfifty();
 
 int main()
 
 {
     /* FILE OPENING */
     FILE *infile;
-    infile= fopen("questions.txt", "r");
-	if(infile == NULL) 
-	{
-		fprintf(stderr, "Error opening file" );
-		exit (1);
-	}
+    infile = fopen("questions.txt", "r");
+    if (infile == NULL)
+    {
+        fprintf(stderr, "Error opening file");
+        exit(1);
+    }
 
     /* Generating a random array of numbers */
     int num[30];
@@ -37,7 +39,7 @@ int main()
     /* Introduction Screen */
     char name[50];
     printf("What is your name?\n");
-    scanf("%s",name);
+    scanf("%s", name);
     system("clear");
     printf("Welcome to Kaun Banega Crorepati %s.\n", name);
     getchar();
@@ -78,41 +80,88 @@ void shuffle(int *array, int n)
     }
 }
 
-void printQuestion(FILE *infile, int *array, int i) 
+void printQuestion(FILE *infile, int *array, int i)
 {
-    char opt, tempstr[4][40];
-    int j = 0;
     int rand = array[i];
-    int temparr[4], count = 0;
+
+    fseek(infile, array[16] * sizeof(struct question), SEEK_SET);
+    fread(&flip, sizeof(struct question), 1, infile);
 
     fseek(infile, rand * sizeof(struct question), SEEK_SET);
     fread(&q, sizeof(struct question), 1, infile);
 
-    for(int k = 0; k < 4; ++k) strcpy(tempstr[k],q.options[k]);
-    for (int k = 0; k < 4; k++) temparr[k] = k;
-    
-    shuffle(temparr, 4);
-
+/* DISPLAYING A QUESTION */
+display:
     printf("Question Number %d\n", i + 1);
     printf("%s\n", q.question);
     printf("A. %s \t\t B. %s\n", q.options[0], q.options[1]);
     printf("C. %s \t\t D. %s\n\n", q.options[2], q.options[3]);
-    
-    enter:
+
+    checkAnswer();
+}
+
+void checkAnswer()
+{
+    char opt;
+    int j;
+
     printf("Enter the option you wish to choose: ");
     scanf("%c", &opt);
     getchar();
-    switch(tolower(opt))
+    switch (tolower(opt))
     {
-        case 'a' : j = 0; break;
-        case 'b' : j = 1; break;
-        case 'c' : j = 2; break;
-        case 'd' : j = 3; break;
-        case 'f' : 
-        for (int k = 0; k < 4; k++) {
-            if(count == 2) break;
+    case 'a':
+        j = 0;
+        break;
+    case 'b':
+        j = 1;
+        break;
+    case 'c':
+        j = 2;
+        break;
+    case 'd':
+        j = 3;
+        break;
+    case 'f':
+        /* FIFTY FIFTY LIFELINE */
+        fiftyfifty(); goto skip;
+    case 'l': break;
 
-            if(strcmp(q.correctAnswer, tempstr[temparr[k]]) == 0) ;
+    default:
+    {
+        printf("WRONG OPTION ENTERED. RE ENTER.\n");
+        checkAnswer();
+    };
+    }
+
+    if (strcmp(q.correctAnswer, q.options[j]) == 0)
+        printf("CORRECT ANSWER\n\n");
+    else
+        printf("WRONG\n\n");
+
+    skip: ;
+}
+
+void fiftyfifty()
+{
+    char tempstr[4][40];
+    int temparr[4], count = 0;
+
+
+    for (int k = 0; k < 4; ++k)
+    {
+        strcpy(tempstr[k], q.options[k]);
+        temparr[k] = k;
+    }
+    shuffle(temparr, 4);
+
+    for (int k = 0; k < 4; k++)
+        {
+            if (count == 2)
+                break;
+
+            if (strcmp(q.correctAnswer, tempstr[temparr[k]]) == 0)
+                ;
             else
             {
                 count++;
@@ -122,12 +171,6 @@ void printQuestion(FILE *infile, int *array, int i)
         printf("%s\n", q.question);
         printf("A. %s \t\t B. %s\n", tempstr[0], tempstr[1]);
         printf("C. %s \t\t D. %s\n\n", tempstr[2], tempstr[3]);
-        goto enter;
-        break;
 
-        default : { printf("WRONG OPTION ENTERED. RE ENTER.\n"); goto enter; }; 
-    }
-
-    if (strcmp(q.correctAnswer, q.options[j]) == 0) printf("CORRECT ANSWER\n\n");
-    else printf("WRONG\n\n");
+        checkAnswer();
 }
