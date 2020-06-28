@@ -21,7 +21,7 @@ void flipQuestion();
 int calculateGameOver(int roundNumber);
 int calculateGameQuit(int roundNumber);
 
-/* Global variables to determine whether a lifeline is used / whether Game is over due to a wrong answer */
+/* Global variables to determine whether a lifeline is used or whether Game is over due to a wrong answer */
 int isGameOver = 0, isGameQuit, isFiftyFiftyUsed = 0, isFlipUsed = 0;
 
 int main()
@@ -69,6 +69,7 @@ int main()
         ;
     }
     system("clear");
+
     /* MAIN PART */
     int i;
     for (i = 0; i < 15; ++i)
@@ -97,6 +98,7 @@ int main()
     return 0;
 }
 
+/* Function for shuffling an array. */
 void shuffle(int *array, int n)
 {
     srand(time(0));
@@ -110,6 +112,7 @@ void shuffle(int *array, int n)
     }
 }
 
+/* Function for printing a question. */
 void printQuestion(FILE *infile, int *array, int i)
 {
     int rand = array[i];
@@ -121,7 +124,6 @@ void printQuestion(FILE *infile, int *array, int i)
     fread(&q, sizeof(struct question), 1, infile);
 
     /* DISPLAYING A QUESTION */
-display:
     printf("Question Number %d\n", i + 1);
     printf("You have %'d credits and you are playing for %'d credits.\n\n", calculateGameQuit(i + 1), calculateGameQuit(i + 2));
     printf("%s\n", q.question);
@@ -131,6 +133,7 @@ display:
     checkAnswer(q);
 }
 
+/* Function for checking the answer. */
 void checkAnswer(struct question ques)
 {
     char opt;
@@ -150,7 +153,7 @@ void checkAnswer(struct question ques)
 
     if ((isFlipUsed == 1) && (isFiftyFiftyUsed == 1))
     {
-        printf("You have no lifelines left.");
+        printf("You have no lifelines left.\n\n");
     }
 
     scanf("%c", &opt);
@@ -220,9 +223,11 @@ void checkAnswer(struct question ques)
         printf("Wrong answer.\n");
         isGameOver = 1;
     }
+
 skip:;
 }
 
+/* Function for the fifty-fifty lifeline. */
 void fiftyfifty(struct question ques)
 {
     isFiftyFiftyUsed = 1;
@@ -257,6 +262,7 @@ void fiftyfifty(struct question ques)
     checkAnswer(ques);
 }
 
+/* Function for the Flip Question lifeline. */
 void flipQuestion()
 {
     isFlipUsed = 1;
@@ -272,7 +278,7 @@ int calculateGameOver(int roundNumber)
     if (roundNumber <= 5)
         return 0;
     else if (roundNumber <= 10)
-        return 10000;
+        return 10000;~
     else
         return 320000;
 }
